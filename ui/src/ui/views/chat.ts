@@ -14,6 +14,9 @@ import { icons } from "../icons.ts";
 import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
 import "../components/resizable-divider.ts";
 
+// Marker to identify bare reset/new session prompts that should be hidden from UI
+const BARE_RESET_MARKER = "A new session was started via /new or /reset";
+
 export type CompactionIndicatorStatus = {
   active: boolean;
   startedAt: number | null;
@@ -479,6 +482,15 @@ function buildChatItems(props: ChatProps): Array<ChatItem | MessageGroup> {
     const normalized = normalizeMessage(msg);
 
     if (!props.showThinking && normalized.role.toLowerCase() === "toolresult") {
+      continue;
+    }
+
+    // Filter out bare reset/new session prompts that leak from gateway
+    const messageText =
+      typeof normalized.content === "string"
+        ? normalized.content
+        : normalized.content.map((c) => c.text ?? "").join("");
+    if (messageText.includes(BARE_RESET_MARKER)) {
       continue;
     }
 
