@@ -14,8 +14,9 @@ import { icons } from "../icons.ts";
 import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
 import "../components/resizable-divider.ts";
 
-// Marker to identify bare reset/new session prompts that should be hidden from UI
-const BARE_RESET_MARKER = "A new session was started via /new or /reset";
+// Full prompt text to identify bare reset/new session prompts that should be hidden from UI
+const BARE_SESSION_RESET_PROMPT =
+  "A new session was started via /new or /reset. Greet the user in your configured persona, if one is provided. Be yourself - use your defined voice, mannerisms, and mood. Keep it to 1-3 sentences and ask what they want to do. If the runtime model differs from default_model in the system prompt, mention the default model. Do not mention internal steps, files, tools, or reasoning.";
 
 export type CompactionIndicatorStatus = {
   active: boolean;
@@ -490,7 +491,7 @@ function buildChatItems(props: ChatProps): Array<ChatItem | MessageGroup> {
       typeof normalized.content === "string"
         ? normalized.content
         : normalized.content.map((c) => c.text ?? "").join("");
-    if (messageText.includes(BARE_RESET_MARKER)) {
+    if (normalized.role === "system" && messageText.trim() === BARE_SESSION_RESET_PROMPT) {
       continue;
     }
 
